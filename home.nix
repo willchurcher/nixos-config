@@ -40,12 +40,18 @@ in
     pbpaste = "wl-paste";
   };
 
-  programs.git = {
+programs.git = {
     enable = true;
   
-    settings = {
+    # keep your settings (writes to ~/.config/git/config in your setup)
+   settings = {
       init.defaultBranch = "main";
     };
+  
+    # ensure ~/.gitconfig includes the XDG config too
+    includes = [
+      { path = "${config.home.homeDirectory}/.config/git/config"; }
+    ];
   };
 
 
