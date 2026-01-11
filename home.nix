@@ -29,6 +29,15 @@ in
     pbpaste = "wl-paste";
   };
 
+  programs.git = {
+    enable = true;
+  
+    extraConfig = {
+      init.defaultBranch = "main";
+    };
+  };
+
+
   xdg.userDirs = {
     enable = true;
     createDirectories = true;
