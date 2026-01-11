@@ -9,6 +9,8 @@ in
   home.stateVersion = "25.11";
 
   home.packages = with pkgs; [
+    home-manager
+
     wl-clipboard
     tree
     file
