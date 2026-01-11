@@ -12,7 +12,10 @@ in
     wl-clipboard
     tree
     file
+ 
     uv
+    python313
+
     scripts.cfgclip
   ];
 
