@@ -21,6 +21,12 @@ in
     scripts.cfgclip
   ];
 
+  home.sessionVariables = {
+    XDG_CONFIG_HOME = "${config.home.homeDirectory}/.config";
+  };
+  xdg.enable = true;
+
+
   programs.bash.enable = true;
   programs.zsh.enable = true;
 
