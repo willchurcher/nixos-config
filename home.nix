@@ -12,6 +12,7 @@ in
     wl-clipboard
     tree
     file
+    uv
     scripts.cfgclip
   ];
 
