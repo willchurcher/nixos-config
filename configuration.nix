@@ -120,6 +120,14 @@
     vim
     vscode
     git
+
+    # KDE Bluetooth UI bits (fixes missing QML modules)
+    kdePackages.bluedevil
+    kdePackages.bluez-qt
+
+    # File transfer over Bluetooth
+    openobex
+    obexftp
   ];
 
   system.stateVersion = "25.11";
