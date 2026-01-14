@@ -30,6 +30,15 @@
     rtl88x2bu
   ];
 
+  # Bluetooth (Realtek USB dongle uses btusb + firmware; enable BlueZ)
+  hardware.bluetooth = {
+    enable = true;
+    powerOnBoot = true;
+  };
+
+  # Optional GUI tray/app for Bluetooth
+  services.blueman.enable = true;
+
   # Time & locale
   time.timeZone = "Europe/London";
   i18n.defaultLocale = "en_GB.UTF-8";
@@ -111,7 +120,7 @@
     vim
     vscode
     git
-];
+  ];
 
   system.stateVersion = "25.11";
 }
