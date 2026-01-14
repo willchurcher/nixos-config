@@ -6,11 +6,11 @@
 #   brain /etc/nixos   # dumps given dir
 #
 # Env:
-#   CFGCLIP_MAX_BYTES=262144        # max bytes per file (default 256 KiB)
+#   CFGCLIP_MAX_BYTES=262144         # max bytes per file (default 256 KiB)
 #   CFGCLIP_MAX_TOTAL_BYTES=10485760 # max total dump bytes (default 10 MiB; 0 = unlimited)
-#   CFGCLIP_KEEP=1                  # keep temp dump file and print its path (default 0)
-#   CFGCLIP_TREE=1                  # include tree output (default 1)
-#   CFGCLIP_NL=1                    # line-number files (default 1)
+#   CFGCLIP_KEEP=1                   # keep temp dump file and print its path (default 0)
+#   CFGCLIP_TREE=1                   # include tree output (default 1)
+#   CFGCLIP_NL=1                     # line-number files (default 1)
 
 set -euo pipefail
 
@@ -19,7 +19,7 @@ if ! command -v wl-copy >/dev/null 2>&1; then
   exit 1
 fi
 
-root="${1:-$PWD}"
+root="${1:-/etc/nixos}"
 max_bytes="${CFGCLIP_MAX_BYTES:-262144}"
 max_total_bytes="${CFGCLIP_MAX_TOTAL_BYTES:-10485760}"
 keep="${CFGCLIP_KEEP:-0}"
@@ -94,10 +94,7 @@ if [[ "$do_tree" == "1" ]]; then
   fi
 fi
 
-# Build a robust prune expression:
-# - prune symlinks (prevents walking into /nix/store via result symlinks)
-# - prune any directory whose basename matches one of prune_dirs
-#   (note: `-name` supports globs like result-*)
+# Build prune expression
 find_prune=()
 for d in "${prune_dirs[@]}"; do
   find_prune+=( -name "$d" -o )
@@ -118,7 +115,6 @@ while IFS= read -r -d '' f; do
 
   bn="$(basename "$f")"
   for g in "${skip_name_globs[@]}"; do
-    # Intentionally allow glob matching like *.pem, .env.*
     # shellcheck disable=SC2053
     if [[ "$bn" == $g ]]; then
       continue 2
@@ -145,8 +141,10 @@ while IFS= read -r -d '' f; do
     continue
   fi
 
-  # Cheap binary detection: skip files with NUL byte in first 8 KiB
-  if head -c 8192 "$f" | LC_ALL=C grep -q $'\x00'; then
+  # Robust binary detection: look for NUL bytes via od
+  if dd if="$f" bs=8192 count=1 status=none 2>/dev/null \
+    | od -An -tx1 -v \
+    | grep -qE '(^|[[:space:]])00([[:space:]]|$)'; then
     {
       echo "===== FILE: $rel ====="
       echo "(skipped: binary file detected)"
