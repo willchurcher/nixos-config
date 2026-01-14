@@ -19,6 +19,10 @@ in
     python313
 
     scripts.cfgclip
+
+    # Apps
+    discord
+    steam
   ];
 
   home.sessionVariables = {
