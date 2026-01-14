@@ -6,8 +6,11 @@
 #   brain /etc/nixos   # dumps given dir
 #
 # Env:
-#   CFGCLIP_MAX_BYTES=262144   # max bytes per file (default 256 KiB)
-#   CFGCLIP_KEEP=1             # keep temp dump file and print its path (default 0)
+#   CFGCLIP_MAX_BYTES=262144        # max bytes per file (default 256 KiB)
+#   CFGCLIP_MAX_TOTAL_BYTES=10485760 # max total dump bytes (default 10 MiB; 0 = unlimited)
+#   CFGCLIP_KEEP=1                  # keep temp dump file and print its path (default 0)
+#   CFGCLIP_TREE=1                  # include tree output (default 1)
+#   CFGCLIP_NL=1                    # line-number files (default 1)
 
 set -euo pipefail
 
@@ -18,7 +21,10 @@ fi
 
 root="${1:-$PWD}"
 max_bytes="${CFGCLIP_MAX_BYTES:-262144}"
+max_total_bytes="${CFGCLIP_MAX_TOTAL_BYTES:-10485760}"
 keep="${CFGCLIP_KEEP:-0}"
+do_tree="${CFGCLIP_TREE:-1}"
+do_nl="${CFGCLIP_NL:-1}"
 
 if command -v realpath >/dev/null 2>&1; then
   root="$(realpath "$root")"
@@ -67,28 +73,36 @@ skip_name_globs=(
   echo "root: $root"
   echo "generated: $(date -Iseconds)"
   echo "max_bytes_per_file: $max_bytes"
+  echo "max_total_bytes: $max_total_bytes"
   echo
 } > "$tmp"
 
-if command -v tree >/dev/null 2>&1; then
-  tree_ignore="$(IFS='|'; echo "${prune_dirs[*]}")"
-  {
-    echo "### tree"
-    tree -a -F -I "$tree_ignore" "$root" || true
-    echo
-  } >> "$tmp"
-else
-  {
-    echo "### tree"
-    echo "(missing 'tree' command; on NixOS add pkgs.tree)"
-    echo
-  } >> "$tmp"
+if [[ "$do_tree" == "1" ]]; then
+  if command -v tree >/dev/null 2>&1; then
+    tree_ignore="$(IFS='|'; echo "${prune_dirs[*]}")"
+    {
+      echo "### tree"
+      tree -a -F -I "$tree_ignore" "$root" || true
+      echo
+    } >> "$tmp"
+  else
+    {
+      echo "### tree"
+      echo "(missing 'tree' command; on NixOS add pkgs.tree)"
+      echo
+    } >> "$tmp"
+  fi
 fi
 
+# Build a robust prune expression:
+# - prune symlinks (prevents walking into /nix/store via result symlinks)
+# - prune any directory whose basename matches one of prune_dirs
+#   (note: `-name` supports globs like result-*)
 find_prune=()
 for d in "${prune_dirs[@]}"; do
-  find_prune+=( -path "*/$d" -o -path "*/$d/*" -o )
+  find_prune+=( -name "$d" -o )
 done
+unset 'find_prune[${#find_prune[@]}-1]'
 
 while IFS= read -r -d '' f; do
   rel="${f#"$root"/}"
@@ -131,21 +145,20 @@ while IFS= read -r -d '' f; do
     continue
   fi
 
-  if command -v file >/dev/null 2>&1; then
-    if file --brief --mime "$f" | grep -qiE 'charset=binary|application/octet-stream'; then
-      {
-        echo "===== FILE: $rel ====="
-        echo "(skipped: binary file detected)"
-        echo
-      } >> "$tmp"
-      continue
-    fi
+  # Cheap binary detection: skip files with NUL byte in first 8 KiB
+  if head -c 8192 "$f" | LC_ALL=C grep -q $'\x00'; then
+    {
+      echo "===== FILE: $rel ====="
+      echo "(skipped: binary file detected)"
+      echo
+    } >> "$tmp"
+    continue
   fi
 
   {
     echo "===== FILE: $rel ====="
     echo
-    if command -v nl >/dev/null 2>&1; then
+    if [[ "$do_nl" == "1" ]] && command -v nl >/dev/null 2>&1; then
       nl -ba "$f" || cat "$f"
     else
       cat "$f"
@@ -153,8 +166,21 @@ while IFS= read -r -d '' f; do
     echo
     echo
   } >> "$tmp"
+
+  if [[ "$max_total_bytes" != "0" ]]; then
+    current_bytes="$(wc -c < "$tmp" | tr -d ' ' || echo 0)"
+    if [[ "$current_bytes" -gt "$max_total_bytes" ]]; then
+      {
+        echo "### (stopped: total dump exceeded ${max_total_bytes} bytes)"
+        echo
+      } >> "$tmp"
+      break
+    fi
+  fi
 done < <(
-  find "$root" \( "${find_prune[@]}" -false \) -prune -o -type f -print0
+  find "$root" \
+    \( -type l -o \( "${find_prune[@]}" \) \) -prune -o \
+    -type f -print0
 )
 
 wl-copy < "$tmp"
@@ -167,3 +193,4 @@ else
   rm -f "$tmp"
   echo "brain: copied ${bytes} bytes to clipboard"
 fi
+
