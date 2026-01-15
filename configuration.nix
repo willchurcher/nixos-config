@@ -86,7 +86,24 @@
     powerManagement.finegrained = false;
     open = false;
   };
-  boot.kernelParams = [ "nvidia_drm.modeset=1" ];
+
+  # Keep your existing NVIDIA param, and also disable USB autosuspend to reduce
+  # USB Wi-Fi/Bluetooth breaking after sleep/resume.
+  # (usbcore.autosuspend=-1 is a common, documented kernel option for this.) :contentReference[oaicite:2]{index=2}
+  boot.kernelParams = [
+    "nvidia_drm.modeset=1"
+    "usbcore.autosuspend=-1"
+  ];
+
+  # HARD DISABLE SUSPEND/HIBERNATE SYSTEM-WIDE
+  # This ensures "sleep" doesn't power down the machine, so games keep running.
+  # KDE can still turn the screen off (DPMS) without suspending. :contentReference[oaicite:3]{index=3}
+  systemd.sleep.extraConfig = ''
+    AllowSuspend=no
+    AllowHibernation=no
+    AllowHybridSleep=no
+    AllowSuspendThenHibernate=no
+  '';
 
   # Printing
   services.printing.enable = true;
