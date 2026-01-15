@@ -157,6 +157,7 @@ while IFS= read -r -d '' f; do
 
   bn="$(basename "$f")"
   for g in "${skip_name_globs[@]}"; do
+    # shellcheck disable=SC2053
     if [[ "$bn" == $g ]]; then
       continue 2
     fi
