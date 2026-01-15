@@ -37,7 +37,7 @@
   };
 
   # Optional GUI tray/app for Bluetooth
-  services.blueman.enable = true;
+  services.blueman.enable = false;
 
   # Time & locale
   time.timeZone = "Europe/London";
