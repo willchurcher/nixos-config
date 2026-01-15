@@ -39,7 +39,26 @@ base="$(basename "$root")"
 ts="$(date +%Y%m%d-%H%M%S)"
 tmp="$(mktemp -t "brain-${base}-${ts}.XXXXXX.txt")"
 
-prune_dirs=(
+# ─────────────────────────────────────────────────────────────
+# Pruning rules
+# ─────────────────────────────────────────────────────────────
+
+# Directories excluded from file-content dumping (but may appear in tree)
+dump_prune_dirs=(
+  .git .hg .svn
+  result result-*
+  node_modules
+  .direnv .venv venv
+  __pycache__ .mypy_cache .pytest_cache .ruff_cache
+  .cache
+  .idea .vscode
+  dist build target
+  .terraform .tox
+)
+
+# Directories hidden entirely from tree output
+# NOTE: we include .git here so it won't be expanded; we’ll add a single ".git/" line manually.
+tree_prune_dirs=(
   .git .hg .svn
   result result-*
   node_modules
@@ -68,6 +87,10 @@ skip_name_globs=(
   ".env" ".env.*"
 )
 
+# ─────────────────────────────────────────────────────────────
+# Header
+# ─────────────────────────────────────────────────────────────
+
 {
   echo "### brain"
   echo "root: $root"
@@ -77,12 +100,24 @@ skip_name_globs=(
   echo
 } > "$tmp"
 
+# ─────────────────────────────────────────────────────────────
+# Tree output
+# ─────────────────────────────────────────────────────────────
+
 if [[ "$do_tree" == "1" ]]; then
   if command -v tree >/dev/null 2>&1; then
-    tree_ignore="$(IFS='|'; echo "${prune_dirs[*]}")"
+    tree_ignore="$(IFS='|'; echo "${tree_prune_dirs[*]}")"
     {
       echo "### tree"
       tree -a -F -I "$tree_ignore" "$root" || true
+
+      # Show that .git exists, without expanding it
+      if [[ -d "$root/.git" ]]; then
+        echo " .git/"
+        echo
+        echo "(note: .git exists and is excluded from file dump)"
+      fi
+
       echo
     } >> "$tmp"
   else
@@ -94,12 +129,19 @@ if [[ "$do_tree" == "1" ]]; then
   fi
 fi
 
-# Build prune expression
+# ─────────────────────────────────────────────────────────────
+# Build prune expression for find
+# ─────────────────────────────────────────────────────────────
+
 find_prune=()
-for d in "${prune_dirs[@]}"; do
+for d in "${dump_prune_dirs[@]}"; do
   find_prune+=( -name "$d" -o )
 done
 unset 'find_prune[${#find_prune[@]}-1]'
+
+# ─────────────────────────────────────────────────────────────
+# File dumping
+# ─────────────────────────────────────────────────────────────
 
 while IFS= read -r -d '' f; do
   rel="${f#"$root"/}"
@@ -115,7 +157,6 @@ while IFS= read -r -d '' f; do
 
   bn="$(basename "$f")"
   for g in "${skip_name_globs[@]}"; do
-    # shellcheck disable=SC2053
     if [[ "$bn" == $g ]]; then
       continue 2
     fi
@@ -141,7 +182,7 @@ while IFS= read -r -d '' f; do
     continue
   fi
 
-  # Robust binary detection: look for NUL bytes via od
+  # Robust binary detection (NUL byte check)
   if dd if="$f" bs=8192 count=1 status=none 2>/dev/null \
     | od -An -tx1 -v \
     | grep -qE '(^|[[:space:]])00([[:space:]]|$)'; then
@@ -181,8 +222,11 @@ done < <(
     -type f -print0
 )
 
-wl-copy < "$tmp"
+# ─────────────────────────────────────────────────────────────
+# Clipboard + cleanup
+# ─────────────────────────────────────────────────────────────
 
+wl-copy < "$tmp"
 bytes="$(wc -c < "$tmp" | tr -d ' ' || echo "?")"
 
 if [[ "$keep" == "1" ]]; then
