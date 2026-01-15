@@ -1,10 +1,9 @@
 { pkgs }:
 
 {
-  cfgclip = pkgs.writeShellApplication {
+  brain = pkgs.writeShellApplication {
     name = "brain";
 
-    # These are available at runtime when you execute cfgclip.
     runtimeInputs = with pkgs; [
       wl-clipboard
       tree
@@ -15,6 +14,18 @@
     ];
 
     text = builtins.readFile ./brain.sh;
+  };
+
+  nu = pkgs.writeShellApplication {
+    name = "nu";
+
+    runtimeInputs = with pkgs; [
+      git
+      nix
+      coreutils
+    ];
+
+    text = builtins.readFile ./nu.sh;
   };
 }
 

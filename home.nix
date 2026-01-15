@@ -14,11 +14,13 @@ in
     wl-clipboard
     tree
     file
- 
+
     uv
     python313
 
-    scripts.cfgclip
+    # Your custom scripts (from /etc/nixos/scripts/default.nix)
+    scripts.brain
+    scripts.nu
 
     # Apps
     discord
@@ -29,7 +31,6 @@ in
     XDG_CONFIG_HOME = "${config.home.homeDirectory}/.config";
   };
   xdg.enable = true;
-
 
   programs.bash.enable = true;
   programs.zsh.enable = true;
@@ -46,13 +47,11 @@ in
 
   programs.git = {
     enable = true;
-  
-    # keep your settings (writes to ~/.config/git/config in your setup)
-   settings = {
+
+    settings = {
       init.defaultBranch = "main";
     };
   };
-
 
   xdg.userDirs = {
     enable = true;
