@@ -25,6 +25,7 @@ in
     # Apps
     discord
     steam
+    spotify
   ];
 
   home.sessionVariables = {
