@@ -32,6 +32,8 @@ in
 
     # Utils
     proton-pass
+    obsidian
+    zed
   ];
 
   home.sessionVariables = {
