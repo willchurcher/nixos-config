@@ -51,6 +51,11 @@ case "$cmd" in
     in_repo
     exec git commit "$@"
     ;;
+  
+  ga)
+    in_repo
+    exec git add "$@"
+    ;;
 
   gp)
     in_repo
