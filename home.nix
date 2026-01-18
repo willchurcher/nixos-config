@@ -34,6 +34,7 @@ in
     proton-pass
     obsidian
     claude-code
+    zed-editor
   ];
 
   home.sessionVariables = {
