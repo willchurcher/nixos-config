@@ -9,16 +9,19 @@ in
   home.stateVersion = "25.11";
 
   home.packages = with pkgs; [
+    # Nixos
     home-manager
-
+    
+    # CMD
     wl-clipboard
     tree
     file
 
+    # Python
     uv
     python313
 
-    # Your custom scripts (from /etc/nixos/scripts/default.nix)
+    # Custom scripts
     scripts.brain
     scripts.nu
 
@@ -26,6 +29,9 @@ in
     discord
     steam
     spotify
+
+    # Utils
+    proton-pass
   ];
 
   home.sessionVariables = {
