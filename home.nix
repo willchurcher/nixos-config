@@ -33,7 +33,6 @@ in
     # Utils
     proton-pass
     obsidian
-    zed-editor
     claude-code
   ];
 
