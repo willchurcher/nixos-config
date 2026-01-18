@@ -144,10 +144,7 @@
 
     # File transfer over Bluetooth
     openobex
-    obexftp
-
-    # Utils
-    proton-pass
+    obexftps
   ];
 
   system.stateVersion = "25.11";
