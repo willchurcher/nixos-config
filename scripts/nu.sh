@@ -25,7 +25,7 @@ die() { echo "nu: $*" >&2; exit 1; }
 
 need_root() {
   if [[ "${EUID}" -ne 0 ]]; then
-    exec sudo -E "$0" "$cmd" "$@"
+    exec sudo "$0" "$cmd" "$@"
   fi
 }
 
