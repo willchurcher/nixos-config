@@ -6,6 +6,7 @@ set -euo pipefail
 # Usage:
 #   nu switch [nixos-rebuild args...]
 #   nu gs
+#   nu ga [git add args...]
 #   nu gc [git commit args...]
 #   nu gp [git push args...]
 #
@@ -47,14 +48,14 @@ case "$cmd" in
     exec git status "$@"
     ;;
 
-  gc)
-    in_repo
-    exec git commit "$@"
-    ;;
-  
   ga)
     in_repo
     exec git add "$@"
+    ;;
+
+  gc)
+    in_repo
+    exec git commit "$@"
     ;;
 
   gp)
@@ -72,15 +73,17 @@ Defaults:
   flake ref: $flake_ref
 
 Commands:
-  nu switch [args...]   sudo nixos-rebuild switch --flake $flake_ref
-  nu gs                 git status (in \$FLAKE_DIR)
-  nu gc [args...]       git commit (in \$FLAKE_DIR)
-  nu gp [args...]       git push   (in \$FLAKE_DIR)
+  nu switch [args...]    sudo nixos-rebuild switch --flake $flake_ref
+  nu gs                  git status (in \$FLAKE_DIR)
+  nu ga [args...]        git add    (in \$FLAKE_DIR)
+  nu gc [args...]        git commit (in \$FLAKE_DIR)
+  nu gp [args...]        git push   (in \$FLAKE_DIR)
 
 Examples:
   nu switch
   nu switch --show-trace
   nu gs
+  nu ga -A
   nu gc -am "update"
   nu gp
 EOF
