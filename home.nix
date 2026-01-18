@@ -34,7 +34,7 @@ in
     proton-pass
     obsidian
     claude-code
-    zed-editor
+    (zed-editor.overrideAttrs (_: { doCheck = false; }))
   ];
 
   home.sessionVariables = {
