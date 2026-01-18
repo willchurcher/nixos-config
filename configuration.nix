@@ -55,10 +55,31 @@
   };
 
   # Keyboard
+  #
+  # Goal:
+  #   Shift+3 => #
+  #   Right Option (AltGr/Level3) + 3 => £
+  #
+  # We create a custom XKB layout that includes gb(mac) and overrides <AE03>.
   services.xserver.xkb = {
-    layout = "gb";
-    variant = "mac";
+    layout = "gb-mac-swap3";
+    variant = "";
   };
+
+  services.xserver.xkb.extraLayouts = {
+    gb-mac-swap3 = {
+      description = "GB (Mac) with Shift-3=# and RAlt/Option-3=£";
+      languages = [ "eng" ];
+      symbolsFile = pkgs.writeText "gb-mac-swap3" ''
+        partial alphanumeric_keys
+        xkb_symbols "basic" {
+          include "gb(mac)"
+          key <AE03> { [ 3, numbersign, sterling, threesuperior ] };
+        };
+      '';
+    };
+  };
+
   console.keyMap = "uk";
 
   # Graphical system
@@ -89,7 +110,7 @@
 
   # Keep your existing NVIDIA param, and also disable USB autosuspend to reduce
   # USB Wi-Fi/Bluetooth breaking after sleep/resume.
-  # (usbcore.autosuspend=-1 is a common, documented kernel option for this.) :contentReference[oaicite:2]{index=2}
+  # (usbcore.autosuspend=-1 is a common, documented kernel option for this.)
   boot.kernelParams = [
     "nvidia_drm.modeset=1"
     "usbcore.autosuspend=-1"
@@ -97,7 +118,7 @@
 
   # HARD DISABLE SUSPEND/HIBERNATE SYSTEM-WIDE
   # This ensures "sleep" doesn't power down the machine, so games keep running.
-  # KDE can still turn the screen off (DPMS) without suspending. :contentReference[oaicite:3]{index=3}
+  # KDE can still turn the screen off (DPMS) without suspending.
   systemd.sleep.extraConfig = ''
     AllowSuspend=no
     AllowHibernation=no
