@@ -33,7 +33,7 @@ in
     # Utils
     proton-pass
     obsidian
-    zed
+    zed-editor
   ];
 
   home.sessionVariables = {
