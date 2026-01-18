@@ -144,7 +144,7 @@
 
     # File transfer over Bluetooth
     openobex
-    obexftps
+    obexftp
   ];
 
   system.stateVersion = "25.11";
