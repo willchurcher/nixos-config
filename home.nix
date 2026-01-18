@@ -61,16 +61,18 @@ in
       init.defaultBranch = "main";
     };
   };
-
-  xdg.userDirs = {
+ 
+   xdg.userDirs = {
     enable = true;
     createDirectories = true;
-
-    desktop = config.home.homeDirectory;
-    templates = config.home.homeDirectory;
-    publicShare = config.home.homeDirectory;
-
-    download = "${config.home.homeDirectory}/downloads";
+  
+    # I don't want to see these
+    desktop = "${config.home.homeDirectory}/.local/desktop";
+    templates = "${config.home.homeDirectory}/.local/desktop";
+    publicShare = "${config.home.homeDirectory}/.local/publicShare";
+  
+    # Directories in root
+    download = "${config.home.homeDirectory}/inbox";
     documents = "${config.home.homeDirectory}/notes";
     pictures = "${config.home.homeDirectory}/media/images";
     music = "${config.home.homeDirectory}/media/audio";
