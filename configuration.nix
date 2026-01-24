@@ -129,6 +129,9 @@
   # Printing
   services.printing.enable = true;
 
+  # Flatpak
+  services.flatpak.enable = true;
+
   # Audio (PipeWire)
   services.pulseaudio.enable = false;
   security.rtkit.enable = true;
