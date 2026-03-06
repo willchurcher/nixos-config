@@ -162,6 +162,7 @@
     vscode
     git
     gcc
+    gdb
 
     # KDE Bluetooth UI bits (fixes missing QML modules)
     kdePackages.bluedevil
