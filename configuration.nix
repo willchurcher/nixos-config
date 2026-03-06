@@ -161,6 +161,7 @@
     vim
     vscode
     git
+    gcc
 
     # KDE Bluetooth UI bits (fixes missing QML modules)
     kdePackages.bluedevil
